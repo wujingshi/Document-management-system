@@ -1,0 +1,86 @@
+{{extend ("./parent.html")}} {{#block ("bodyInfo")}}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1">文件名称</span>
+            <input type="text" class="form-control" id="studentNameId" placeholder="请输入文件名称进行查询" aria-describedby="basic-addon1" style="width:200px;margin-right:10px;"
+                value="{{keyword}}">
+            <input type="button" class="btn btn-success" onclick='search()' value="查找" style="margin-right:10px;">
+        </div>
+    </div>
+    <div class="panel-body">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>上传时间</th>
+                    <th>文件大小</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each(fileList)}}
+                <tr>
+                    <td>{{this.name}}</td>
+                    <td>{{this.createrTime}}</td>
+                    <td>{{this.size}}</td>
+                    <td>
+                        <input type="button" onclick="downFile('{{this.name}}')" class="btn btn-danger" value="下载">
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    // 下载
+    function downFile(_name) {
+        $('body').loading({
+			loadingWidth:240,
+			title:'请稍等!',
+			name:'test',
+			discription:'正在加载中……',
+			direction:'column',
+			type:'origin',
+			// originBg:'#71EA71',
+			originDivWidth:40,
+			originDivHeight:40,
+			originWidth:6,
+			originHeight:6,
+			smallLoading:false,
+			loadingMaskBg:'rgba(0,0,0,0.2)'
+		});
+        $.get({
+            url: '/downFile?name=' + _name,
+            success: function (data) {
+                let ab = new ArrayBuffer(data.buffer.data.length);
+                let view = new Uint8Array(ab);
+                for (var i = 0; i < data.buffer.data.length; ++i) {
+                    view[i] = data.buffer.data[i];
+                }
+                let typeInfo=data.name.split('.');
+                typeNum=typeInfo[typeInfo.length-1];
+                let blob=''
+                if(typeNum=="zip"){
+                    blob = new Blob([ab], { type: 'application/zip'})
+                }else if(typeNum=="log"||typeNum=="txt"){
+                    blob = new Blob([ab], { type: 'text/plain' })
+                }else{
+                    alert("文件无法识别，请找管理员小哥哥！")
+                    return
+                }
+                const downloadElement = document.createElement('a')
+                const href = window.URL.createObjectURL(blob)
+                downloadElement.href = href
+                downloadElement.download = data.name;
+                document.body.appendChild(downloadElement)
+                downloadElement.click()
+                document.body.removeChild(downloadElement) // 下载完成移除元素
+                window.URL.revokeObjectURL(href) // 释放掉blob对象
+                removeLoading('test');
+            }
+        })
+    }
+</script>
+{{/block}}
