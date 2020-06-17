@@ -4,6 +4,7 @@ const express=require('express');
 const path=require('path');
 const fs = require('fs');
 const multer = require('multer');
+const moment = require('moment');
 
 const indexRouter = express.Router();
 const indexRouterCRTL = require(path.join(__dirname, '../controllers/indexRountCRTL.js'));
@@ -19,14 +20,11 @@ const storage = multer.diskStorage({
     }, 
     //给上传文件重命名，获取添加后缀名
      filename: function (req, file, cb) {
-         console.log(file)
-         let fileFormat = (file.originalname).split(".");
-         fs.readdir(indexRouterCRTL.fileUrlInfo,function(err,files){
-            if(files.some(item=>item==file.originalname)){
-                cb(null, file.originalname + '-' + Date.now() + "." + fileFormat[fileFormat.length - 1]);
-            }else{
-                cb(null, file.originalname);
-            }
+        console.log(file)
+        let fileFormat = (file.originalname).split(".");
+        fs.readdir(indexRouterCRTL.fileUrlInfo,function(err,files){
+            // cb(null, fileFormat[0] + '-' + Date.now() + "." + fileFormat[fileFormat.length - 1]);
+            cb(null, fileFormat[0] + '-' + moment(Date.now()).format('YYYY年MM月DD日h时mm分ss秒') + "." + fileFormat[fileFormat.length - 1]);
         })
     }
 });  
@@ -34,6 +32,9 @@ const upload = multer({ storage: storage});
 
 // 获取首页页面
 indexRouter.get('/',indexRouterCRTL.getIndexPage);
+
+// 查询
+indexRouter.get('/searList',indexRouterCRTL.searchList);
 
 // 上传文件
 indexRouter.post('/updataFile',upload.array('file'),indexRouterCRTL.updataFile)

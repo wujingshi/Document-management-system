@@ -82,5 +82,11 @@
             }
         })
     }
+    // 查询
+    function search() {
+        let keyword = $("#studentNameId").val()||"";
+        //发送请求
+        window.location.href = '/searList?name=' + keyword
+    }
 </script>
 {{/block}}

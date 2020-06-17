@@ -102,7 +102,7 @@ exports.downFile=(req,res)=>{
     return;
 }
 
-// 跳转页面
+// 获取文件列表
 exports.getIndexPage = (req, res) => {
     getAllFile().then(listdata=>{
         xtpl.renderFile(path.join(__dirname, '../view/index.html'), {
@@ -114,16 +114,25 @@ exports.getIndexPage = (req, res) => {
     })
 }
 
-// 获取文件列表
-exports.getData = (req, res) => {
-    const keyword = req.query.keyword || '';
-    // 获取post提交过来的参数
-    const params = req.body;
-    xtpl.renderFile(path.join(__dirname, '../view/list.html'), {
-        students: '1111',
-        keyword: keyword,
-        loginedName: req.session.username
-    }, (err, content) => {
-        res.send(content);
+// 查询
+exports.searchList=(req,res)=>{
+    let name=req.query.name||"";
+    getAllFile().then(listdata=>{
+        let list=[];
+        if(name){
+            listdata.forEach(element => {
+                if(element.name.includes(name)){
+                    list.push(element)
+                }
+            });
+        }else{
+            list=listdata
+        }
+        xtpl.renderFile(path.join(__dirname, '../view/index.html'), {
+            fileList: list,
+            loginedName: req.session.username
+        }, (err, content) => {
+            res.send(content);
+        })  
     })
 }
